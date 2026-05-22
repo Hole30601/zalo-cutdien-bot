@@ -5,47 +5,69 @@ const sendAllMessage =
 require("../services/sendAllMessage");
 
 const {
- loadData,
- saveData
+  loadData,
+  saveData
 } = require("../utils/storage");
 
 module.exports = async (
- req,
- res
+  req,
+  res
 ) => {
 
- try {
+  try {
 
-  const current =
-   await getLichCatDien();
+    const current =
+      await getLichCatDien();
 
-  const old =
-   await loadData();
+    const old =
+      await loadData();
 
-  const newItems =
-   current.filter(
-    item => !old.includes(item)
-   );
+    const newItems =
+      current.filter(
+        item =>
+          !old.includes(item)
+      );
 
-  if (newItems.length) {
+    if (
+      newItems.length > 0
+    ) {
 
-   await sendAllMessage(
+      const message =
 `⚡ Có lịch cắt điện mới
 
-${newItems.join("\n")}`
-   );
+${newItems.join("\n")}`;
 
-   await saveData(current);
+      await sendAllMessage(
+        message
+      );
+
+      await saveData(
+        current
+      );
+
+      return res.json({
+        success: true,
+        sent: true,
+        count:
+          newItems.length
+      });
+
+    }
+
+    return res.json({
+      success: true,
+      sent: false
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+
   }
 
-  res.status(200).send("OK");
-
- } catch (err) {
-
-  console.error(err);
-
-  res.status(500).send(
-   err.message
-  );
- }
 };
